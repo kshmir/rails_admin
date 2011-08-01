@@ -7,13 +7,20 @@ module RailsAdmin
     @@all_models = nil
     @@all_abstract_models = nil
     # Returns all models for a given Rails app
-    
-    
+
+
     # self.all_abstract_models
     def self.all
-      @@all_abstract_models ||= all_models.map{ |model| new(model) }
+      @@all_abstract_models ||= []
+      models = all_models.map { |model| new(model) }
+
+      models.each do |model|
+        @@all_abstract_models << model if not @@all_abstract_models.map(&:model).include? model.model
+      end
+
+      @@all_abstract_models
     end
-    
+
     def self.all_models
       unless @@all_models
         @@all_models = []
@@ -35,7 +42,7 @@ module RailsAdmin
 
         add_models(possible_models, excluded_models)
 
-        @@all_models.sort!{|x, y| x.to_s <=> y.to_s}
+        @@all_models.sort! { |x, y| x.to_s <=> y.to_s }
       end
 
       @@all_models
@@ -49,12 +56,12 @@ module RailsAdmin
     end
 
     def self.add_model(model_name)
-      model = lookup(model_name,false)
+      model = lookup(model_name, false)
       @@all_models << model if model
     end
 
     # Given a string +model_name+, finds the corresponding model class
-    def self.lookup(model_name,raise_error=true)
+    def self.lookup(model_name, raise_error=true)
       begin
         model = model_name.constantize
       rescue NameError
